@@ -22,6 +22,9 @@
     "url": "https://github.com/igor-araujo/BJ-ShareAPI/issues"
   },
   "homepage": "https://github.com/igor-araujo/BJ-ShareAPI#readme",
+  "dependencies": {
+    "nedb": "^1.8.0"
+  },
   "devDependencies": {
     "nodemon": "^1.18.3"
   }

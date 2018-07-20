@@ -1,17 +1,22 @@
-var http = require('http');
-var https = require('https');
-var querystring = require('querystring');
+const http = require('http');
+const https = require('https');
+const Datastore = require('nedb');
+const querystring = require('querystring');
 
-function login(callback){
+
+
+var db = new Datastore({ filename: 'BJ-shareAPI', autoload: true });
+
+function login(username, password, callback) {
   var status = false;
   var message = '';
   var data = {};
 
   var postData = querystring.stringify({
-    'username': '',
-    'password':''
+    'username': username,
+    'password': password
   });
-  
+
   var options = {
     hostname: 'bj-share.info',
     port: 443,
@@ -24,98 +29,128 @@ function login(callback){
   };
 
   req = https.request(options, (res) => {
-    if(res.statusCode = 302){
+    if (res.statusCode = 302) {
       status = true;
       message = 'Login successful';
-      data = {"cookies": JSON.stringify(res.headers["set-cookie"])};
+      data = { "cookies": JSON.stringify(res.headers["set-cookie"]) };
     } else {
       status = false;
       message = 'Status code returned other than 302';
       data = {};
     }
-    var result = {"status": status, "message": message, "data": data };
+    var result = { "status": status, "message": message, "data": data };
     callback(result);
   });
-  
+
   req.on('error', (e) => {
     status = false;
-    message = 'problem with request: '+e.message;
+    message = 'problem with request: ' + e.message;
     data = {};
-    var result = {"status": status, "message": message, "data": data };
+    var result = { "status": status, "message": message, "data": data };
     callback(result);
   });
-  
+
   req.write(postData);
   req.end();
 }
 
-function search(cookies, callback){
+function search(callback) {
   var status = false;
   var message = '';
   var data = {};
-  
-
-  var getData = querystring.stringify({
-    'username': '',
-    'password':''
-  });
-
-  var options = {
-    hostname: 'bj-share.info',
-    port: 443,
-    path: '/index.php',
-    method: 'GET',
-    headers: {
-     'Cookie': '__cfduid=db20069544fe4e64929daa653a5ba5c311532035085;PHPSESSID=cimrke1sb4gabvbul4k8aojde1;session=uwj08zaL%2FPbHnA13%2BrBQNYM3YgsIUYFERfWHbwdc0EM0xc7fjkFwq3uB%2FV7ZFWlUCHFXrKCKNJT80RDsQdWhZuXGaCGQgwg7OwfE9RniOqEVotSggzqnKAC5ygLyLX%2Fg3dgeDDiHPuDaHVBTKJZ7WQ%3D%3D'
-      
-    }
-  };
-
-  var req = https.request(options, (res) => {
-    if(res.statusCode = 200){
-      status = true;
-      message = 'Search successful';
-      data = {"body": ''};
-    } else {
+  var cookies = '';
+  db.findOne({}, function (err, doc) {
+    if (err) {
       status = false;
-      message = 'Status code returned other than 200';
+      message = 'problem with persit data: [' + err.errorType + '] ' + err.message;
       data = {};
-    }
-
-    res.on('data', (chunk) =>{
-        data.body += chunk;
-    });
-
-    res.on('end', () =>{
-      var result = {"status": status, "message": message, "data": data };
+      var result = { "status": status, "message": message, "data": data };
       callback(result);
-    });
-  });
+    } else {
+      cookies = doc.cookies;
 
-  req.on('error', (e) => {
-    status = false;
-    message = 'problem with request: '+e.message;
-    data = {};
-    var result = {"status": status, "message": message, "data": data };
-    callback(result);
-  });
+      var getData = querystring.stringify({
+        'username': '',
+        'password': ''
+      });
 
-  req.write(getData);
-  req.end();
+      var options = {
+        hostname: 'bj-share.info',
+        port: 443,
+        path: '/index.php',
+        method: 'GET',
+        headers: {
+          'Cookie': cookies
+        }
+      };
+
+      var req = https.request(options, (res) => {
+        if (res.statusCode = 200) {
+          status = true;
+          message = 'Search successful';
+          data = { "body": '', "header": { "req": options, res: res.headers } };
+        } else {
+          status = false;
+          message = 'Status code returned other than 200';
+          data = {};
+        }
+
+        res.on('data', (chunk) => {
+          data.body += chunk;
+        });
+
+        res.on('end', () => {
+          var result = { "status": status, "message": message, "data": data };
+          callback(result);
+        });
+      });
+
+      req.on('error', (e) => {
+        status = false;
+        message = 'problem with request: ' + e.message;
+        data = {};
+        var result = { "status": status, "message": message, "data": data };
+        callback(result);
+      });
+
+      req.write(getData);
+      req.end();
+    }
+  })
 }
 
 
 http.createServer(function (req, res) {
-  res.writeHead(443 , {'Content-Type': ' application/json'});
-  
-  //login(function(result){    
-  //  res.end('{"result": '+JSON.stringify(result)+'}');
-  //});
+  res.writeHead(443, { 'Content-Type': ' application/json' });
+  // var username = 'user';
+  // var password = '********';
+  // login(username, password, function (result) {
+  //   var array = JSON.parse(result.data.cookies);
+  //   var cookies = array[0].split(";")[0];
+  //   console.log(cookies);
+  //   for (var i = 1; i < array.length; i++) {
+  //     cookies += ";" + array[i].split(";")[0];
+  //   }
+  //   db.insert({ username: username, cookies: cookies },
+  //     function (err, doc) {
+  //       if (err) {
+  //         status = false;
+  //         message = 'problem with persit data: [' + err.errorType + '] ' + err.message;
+  //         data = {};
+  //         var result = { "status": status, "message": message, "data": data };
+  //         res.end('{"result": ' + JSON.stringify(result) + '}');
+  //       } else {
+  //         search(function (result) {
+  //           res.end('{"result": ' + JSON.stringify(result) + '}');
+  //         });
+  //       }
+  //     });
+  // });
 
-  search('',function(result){
+  search(function(result){
     res.end('{"result": '+JSON.stringify(result)+'}');
   });
-  
+
 }).listen(3000);
 console.log('Server running at http://localhost:3000/');
 
