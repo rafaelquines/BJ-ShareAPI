@@ -2,6 +2,8 @@ const http = require('http');
 const https = require('https');
 const Datastore = require('nedb');
 const querystring = require('querystring');
+const BJConst = require('./BJConst.js');
+const BJQuery = require('./BJQuery.js');
 
 
 
@@ -149,6 +151,9 @@ http.createServer(function (req, res) {
 
   search(function(result){
     res.end('{"result": '+JSON.stringify(result)+'}');
+    var query = new BJQuery("arrow");
+    query.setQuality([BJConst.QUALITY.HDTV]);
+
   });
 
 }).listen(3000);
