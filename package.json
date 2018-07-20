@@ -1,0 +1,28 @@
+{
+  "name": "bj-shareapi",
+  "version": "0.0.1",
+  "description": "API to website https://bj-share.info",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/igor-araujo/BJ-ShareAPI.git"
+  },
+  "keywords": [
+    "API",
+    "BJ-share",
+    "torrent"
+  ],
+  "author": "Igor Meireles de Araújo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/igor-araujo/BJ-ShareAPI/issues"
+  },
+  "homepage": "https://github.com/igor-araujo/BJ-ShareAPI#readme",
+  "devDependencies": {
+    "nodemon": "^1.18.3"
+  }
+}
