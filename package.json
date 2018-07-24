@@ -23,7 +23,8 @@
   },
   "homepage": "https://github.com/igor-araujo/BJ-ShareAPI#readme",
   "dependencies": {
-    "nedb": "^1.8.0"
+    "nedb": "^1.8.0",
+    "cheerio": "^1.0.0-rc.2"
   },
   "devDependencies": {
     "nodemon": "^1.18.3"

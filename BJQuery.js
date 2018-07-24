@@ -3,7 +3,7 @@ const BJConst = require('./BJConst.js');
 class BJQuery {
     constructor(text) {
         this.searchstr = text;
-        this.year = BJConst.YEAR.ALL_YEARS;
+        this.year = undefined;
         this.freetorrent = BJConst.FREE_TORRENT.FALSE;
         this.taglist = undefined;
         this.tags_type = undefined;
